@@ -5,7 +5,7 @@
 /**
  * @fileOverview This file defines a Genkit flow for suggesting anime based on a list of liked anime.
  *
- * - suggestAnime - A function that takes a list of liked anime and suggests new anime with a description, rating, confidence score, reason, seasons, and episode length.
+ * - suggestAnime - A function that takes a list of liked anime and suggests new anime with a description, rating, confidence score, reason, seasons, episode length, and tags.
  * - SuggestAnimeInput - The input type for the suggestAnime function.
  * - SuggestAnimeOutput - The return type for the suggestAnime function.
  */
@@ -38,6 +38,7 @@ const SuggestAnimeOutputSchema = z.object({
         ),
       seasons: z.string().optional().describe('Number of seasons (e.g., "3 seasons", "Movie", "Ongoing").'),
       episodeLength: z.string().optional().describe('Typical episode length (e.g., "24 min per episode", "1h 30min total" for a movie).'),
+      tags: z.array(z.string()).optional().describe('A list of 3-5 descriptive tags for the anime (e.g., genre, themes like "Shonen", "Mecha", "Slice of Life", "Dark Fantasy").'),
     })
   ),
 });
@@ -77,6 +78,7 @@ const suggestAnimePrompt = ai.definePrompt({
   5. A brief reason (1-2 sentences) explaining why this anime is a good suggestion based on the user's liked anime.
   6. Seasons: Information about seasons (e.g., "3 seasons", "Movie", "Ongoing", "1 season, 12 episodes").
   7. Episode Length: Typical episode length (e.g., "24 min per episode", "1h 30min total" for a movie).
+  8. Tags: A list of 3-5 descriptive tags (e.g., genre, themes like 'Shonen', 'Mecha', 'Slice of Life', 'Dark Fantasy').
 
   User's Liked Anime: {{likedAnime}}
   `,

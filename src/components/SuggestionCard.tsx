@@ -2,7 +2,7 @@
 import type { SuggestAnimeOutput } from '@/ai/flows/suggest-anime';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, ThumbsUp, Layers, Clock } from 'lucide-react';
+import { Star, ThumbsUp, Layers, Clock, Tags } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
@@ -85,6 +85,19 @@ export function SuggestionCard({ suggestion, index }: SuggestionCardProps) {
                 <span>{suggestion.episodeLength || 'N/A'}</span>
               </div>
             </div>
+            {suggestion.tags && suggestion.tags.length > 0 && (
+              <div className="flex items-start gap-3">
+                <Tags className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-medium text-foreground">Tags: </span>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {suggestion.tags.map(tag => (
+                      <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
