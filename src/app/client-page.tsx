@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SuggestionCard } from '@/components/SuggestionCard';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks, Loader2, Smile, Rocket } from 'lucide-react';
+import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks, Smile, Rocket, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -64,7 +64,7 @@ export default function AniAffinityClientPage() {
 
   const handleGetSuggestions = async (event: FormEvent) => {
     event.preventDefault();
-    if (likedAnimeList.length === 0) {
+    if (likedAnimeList.length === 0 && isClient) { // Check isClient here
       setError('Please add at least one anime you like.');
       toast({
         title: "No Anime Liked",
@@ -254,7 +254,7 @@ export default function AniAffinityClientPage() {
               </div>
             </div>
           )}
-          {suggestions && suggestions.length === 0 && !isLoading && (
+          {isClient && suggestions && suggestions.length === 0 && !isLoading && (
              <Card className="mt-6 shadow-lg text-center">
                <CardContent className="p-6">
                 <p className="text-muted-foreground">
@@ -319,7 +319,7 @@ export default function AniAffinityClientPage() {
               </div>
             </div>
           )}
-           {newcomerSuggestions && newcomerSuggestions.length === 0 && !isNewcomerLoading && (
+           {isClient && newcomerSuggestions && newcomerSuggestions.length === 0 && !isNewcomerLoading && (
              <Card className="mt-6 shadow-lg text-center">
                <CardContent className="p-6">
                 <p className="text-muted-foreground">
@@ -333,5 +333,3 @@ export default function AniAffinityClientPage() {
     </div>
   );
 }
-
-    
