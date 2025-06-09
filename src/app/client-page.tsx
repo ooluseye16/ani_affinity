@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SuggestionCard } from '@/components/SuggestionCard';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks } from 'lucide-react';
+import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks, Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 
