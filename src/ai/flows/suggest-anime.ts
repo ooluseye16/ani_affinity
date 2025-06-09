@@ -5,7 +5,7 @@
 /**
  * @fileOverview This file defines a Genkit flow for suggesting anime based on a list of liked anime.
  *
- * - suggestAnime - A function that takes a list of liked anime and suggests new anime with a description, rating, confidence score, and reason.
+ * - suggestAnime - A function that takes a list of liked anime and suggests new anime with a description, rating, confidence score, reason, seasons, and episode length.
  * - SuggestAnimeInput - The input type for the suggestAnime function.
  * - SuggestAnimeOutput - The return type for the suggestAnime function.
  */
@@ -36,6 +36,8 @@ const SuggestAnimeOutputSchema = z.object({
         .describe(
           'A brief reason (1-2 sentences) explaining why this anime is a good suggestion based on the user\'s liked anime.'
         ),
+      seasons: z.string().optional().describe('Number of seasons (e.g., "3 seasons", "Movie", "Ongoing").'),
+      episodeLength: z.string().optional().describe('Typical episode length (e.g., "24 min per episode", "1h 30min total" for a movie).'),
     })
   ),
 });
@@ -56,7 +58,7 @@ const estimateConfidence = ai.defineTool({
     async implementation(input) {
         // TODO: add implementation here to return the confidence percentage.
         // Replace this with a proper calculation based on the anime description and user preferences.
-        return 75;
+        return Math.floor(Math.random() * 51) + 50; // Random confidence between 50-100
     }
 });
 
@@ -69,10 +71,12 @@ const suggestAnimePrompt = ai.definePrompt({
 
   Suggest 3 animes. For each anime, include:
   1. Title
-  2. Description
-  3. Rating (out of 10)
+  2. Description (1-2 sentences)
+  3. Rating (out of 10, can be a float)
   4. Likelihood that the user will enjoy it (confidence percentage), using the estimateConfidence tool.
   5. A brief reason (1-2 sentences) explaining why this anime is a good suggestion based on the user's liked anime.
+  6. Seasons: Information about seasons (e.g., "3 seasons", "Movie", "Ongoing", "1 season, 12 episodes").
+  7. Episode Length: Typical episode length (e.g., "24 min per episode", "1h 30min total" for a movie).
 
   User's Liked Anime: {{likedAnime}}
   `,
