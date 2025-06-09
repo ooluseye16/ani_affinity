@@ -70,7 +70,7 @@ const suggestAnimePrompt = ai.definePrompt({
   tools: [estimateConfidence],
   prompt: `You are an AI anime expert. You will suggest new anime to the user based on the animes that the user likes. You must also use the estimateConfidence tool to estimate the user liking towards the suggested anime.
 
-  Suggest 3 animes. For each anime, include:
+  Suggest 5 animes. For each anime, include:
   1. Title
   2. Description (1-2 sentences)
   3. Rating (out of 10, can be a float)
@@ -95,3 +95,4 @@ const suggestAnimeFlow = ai.defineFlow(
     return output!;
   }
 );
+
