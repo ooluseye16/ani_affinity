@@ -13,10 +13,10 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SuggestionCard } from '@/components/SuggestionCard';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks, Loader2, Smile } from 'lucide-react';
+import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks, Loader2, Smile, Rocket } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AniAffinityClientPage() {
   const [currentAnimeInput, setCurrentAnimeInput] = useState('');
@@ -153,164 +153,185 @@ export default function AniAffinityClientPage() {
 
   return (
     <div className="space-y-8">
-      <Card className="shadow-xl">
-        <CardHeader>
-          <CardTitle className="font-headline text-2xl flex items-center gap-2">
-            <ListChecks className="h-7 w-7 text-primary" />
-            Tell Us What You Love
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleGetSuggestions} className="space-y-4">
-            <div className="flex gap-2 items-center">
-              <Input
-                type="text"
-                placeholder="Enter an anime title (e.g., Naruto, Attack on Titan)"
-                value={currentAnimeInput}
-                onChange={(e) => setCurrentAnimeInput(e.target.value)}
-                className="flex-grow"
-                aria-label="Anime title input"
-              />
-              <Button type="button" onClick={handleAddAnime} variant="outline" size="icon" aria-label="Add anime">
-                <PlusCircle className="h-5 w-5" />
-              </Button>
-            </div>
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-headline font-bold text-primary mb-2">Discover Your Next Favorite Anime</h1>
+        <p className="text-lg text-muted-foreground">
+          Let our AI guide you through the vast world of anime, whether you're a seasoned fan or just starting out.
+        </p>
+      </div>
 
-            {isClient && likedAnimeList.length > 0 && (
-              <div className="space-y-2">
-                <h3 className="text-sm font-medium text-muted-foreground">Your Liked Anime:</h3>
-                <div className="flex flex-wrap gap-2">
-                  {likedAnimeList.map(anime => (
-                    <Badge key={anime} variant="secondary" className="py-1 px-3 text-sm">
-                      {anime}
-                      <Button
-                        type="button"
-                        onClick={() => handleRemoveAnime(anime)}
-                        variant="ghost"
-                        size="icon"
-                        className="ml-1 h-5 w-5 p-0"
-                        aria-label={`Remove ${anime}`}
-                      >
-                        <XCircle className="h-4 w-4" />
-                      </Button>
-                    </Badge>
-                  ))}
+      <Tabs defaultValue="recommendations" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="recommendations" className="py-3 text-base">
+            <ListChecks className="mr-2 h-5 w-5" /> Your Personalized Picks
+          </TabsTrigger>
+          <TabsTrigger value="newcomer" className="py-3 text-base">
+            <Rocket className="mr-2 h-5 w-5" /> New to Anime? Start Here!
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="recommendations">
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="font-headline text-2xl flex items-center gap-2">
+                <Sparkles className="h-7 w-7 text-primary" />
+                Tell Us What You Love
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleGetSuggestions} className="space-y-4">
+                <div className="flex gap-2 items-center">
+                  <Input
+                    type="text"
+                    placeholder="Enter an anime title (e.g., Naruto, Attack on Titan)"
+                    value={currentAnimeInput}
+                    onChange={(e) => setCurrentAnimeInput(e.target.value)}
+                    className="flex-grow"
+                    aria-label="Anime title input"
+                  />
+                  <Button type="button" onClick={handleAddAnime} variant="outline" size="icon" aria-label="Add anime">
+                    <PlusCircle className="h-5 w-5" />
+                  </Button>
                 </div>
+
+                {isClient && likedAnimeList.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium text-muted-foreground">Your Liked Anime:</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {likedAnimeList.map(anime => (
+                        <Badge key={anime} variant="secondary" className="py-1 px-3 text-sm">
+                          {anime}
+                          <Button
+                            type="button"
+                            onClick={() => handleRemoveAnime(anime)}
+                            variant="ghost"
+                            size="icon"
+                            className="ml-1 h-5 w-5 p-0"
+                            aria-label={`Remove ${anime}`}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                <Button type="submit" disabled={isLoading || (isClient && likedAnimeList.length === 0)} className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Getting Suggestions...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Get AI Suggestions
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {error && (
+            <div role="alert" className="mt-4 p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              <p>{error}</p>
+            </div>
+          )}
+
+          {isLoading && <LoadingSpinner size={48} className="mt-6 h-12 w-12 text-primary" />}
+
+          {suggestions && suggestions.length > 0 && (
+            <div className="mt-8 space-y-6">
+              <h2 className="font-headline text-2xl text-center text-primary">Here are your recommendations!</h2>
+              <Separator />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {suggestions.map((suggestion, index) => (
+                  <SuggestionCard key={suggestion.title + index} suggestion={suggestion} index={index} />
+                ))}
               </div>
-            )}
-            
-            <Button type="submit" disabled={isLoading || (isClient && likedAnimeList.length === 0)} className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Getting Suggestions...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Get AI Suggestions
-                </>
-              )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+            </div>
+          )}
+          {suggestions && suggestions.length === 0 && !isLoading && (
+             <Card className="mt-6 shadow-lg text-center">
+               <CardContent className="p-6">
+                <p className="text-muted-foreground">
+                  No suggestions found based on your current list. Try adding more or different anime!
+                </p>
+               </CardContent>
+             </Card>
+          )}
+        </TabsContent>
 
-      {error && (
-        <div role="alert" className="p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center gap-2">
-          <AlertCircle className="h-5 w-5" />
-          <p>{error}</p>
-        </div>
-      )}
+        <TabsContent value="newcomer">
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="font-headline text-2xl flex items-center gap-2">
+                <Smile className="h-7 w-7 text-primary" />
+                Describe Your Taste
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleGetNewcomerSuggestions} className="space-y-4">
+                <Input
+                  type="text"
+                  placeholder="e.g., I love fantasy adventures like Lord of the Rings, or witty comedies."
+                  value={tasteInput}
+                  onChange={(e) => setTasteInput(e.target.value)}
+                  aria-label="Describe your taste in shows/movies"
+                />
+                <Button type="submit" disabled={isNewcomerLoading} className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
+                  {isNewcomerLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Finding Your First Anime...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Find My First Anime
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
-      {isLoading && <LoadingSpinner size={48} className="h-12 w-12 text-primary" />}
+          {newcomerError && (
+            <div role="alert" className="mt-4 p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              <p>{newcomerError}</p>
+            </div>
+          )}
 
-      {suggestions && suggestions.length > 0 && (
-        <div className="space-y-6">
-          <h2 className="font-headline text-2xl text-center text-primary">Here are your recommendations!</h2>
-          <Separator />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {suggestions.map((suggestion, index) => (
-              <SuggestionCard key={suggestion.title + index} suggestion={suggestion} index={index} />
-            ))}
-          </div>
-        </div>
-      )}
-      {suggestions && suggestions.length === 0 && !isLoading && (
-         <Card className="shadow-lg text-center">
-           <CardContent className="p-6">
-            <p className="text-muted-foreground">
-              No suggestions found based on your current list. Try adding more or different anime!
-            </p>
-           </CardContent>
-         </Card>
-      )}
+          {isNewcomerLoading && <LoadingSpinner size={48} className="mt-6 h-12 w-12 text-primary" />}
 
-      <Separator />
-
-      <Card className="shadow-xl">
-        <CardHeader>
-          <CardTitle className="font-headline text-2xl flex items-center gap-2">
-            <Smile className="h-7 w-7 text-primary" />
-            New to Anime? Start Your Journey!
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleGetNewcomerSuggestions} className="space-y-4">
-            <Input
-              type="text"
-              placeholder="e.g., I love fantasy adventures like Lord of the Rings, or witty comedies."
-              value={tasteInput}
-              onChange={(e) => setTasteInput(e.target.value)}
-              aria-label="Describe your taste in shows/movies"
-            />
-            <Button type="submit" disabled={isNewcomerLoading} className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
-              {isNewcomerLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Finding Your First Anime...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Find My First Anime
-                </>
-              )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {newcomerError && (
-        <div role="alert" className="p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center gap-2">
-          <AlertCircle className="h-5 w-5" />
-          <p>{newcomerError}</p>
-        </div>
-      )}
-
-      {isNewcomerLoading && <LoadingSpinner size={48} className="h-12 w-12 text-primary" />}
-
-      {newcomerSuggestions && newcomerSuggestions.length > 0 && (
-        <div className="space-y-6">
-          <h2 className="font-headline text-2xl text-center text-primary">Anime For Your First Watch!</h2>
-          <Separator />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {newcomerSuggestions.map((suggestion, index) => (
-              <SuggestionCard key={"newcomer-" + suggestion.title + index} suggestion={suggestion} index={index} />
-            ))}
-          </div>
-        </div>
-      )}
-       {newcomerSuggestions && newcomerSuggestions.length === 0 && !isNewcomerLoading &&(
-         <Card className="shadow-lg text-center">
-           <CardContent className="p-6">
-            <p className="text-muted-foreground">
-              Couldn't find specific recommendations for newcomers based on that. Try a broader description!
-            </p>
-           </CardContent>
-         </Card>
-      )}
-
+          {newcomerSuggestions && newcomerSuggestions.length > 0 && (
+            <div className="mt-8 space-y-6">
+              <h2 className="font-headline text-2xl text-center text-primary">Anime For Your First Watch!</h2>
+              <Separator />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {newcomerSuggestions.map((suggestion, index) => (
+                  <SuggestionCard key={"newcomer-" + suggestion.title + index} suggestion={suggestion} index={index} />
+                ))}
+              </div>
+            </div>
+          )}
+           {newcomerSuggestions && newcomerSuggestions.length === 0 && !isNewcomerLoading && (
+             <Card className="mt-6 shadow-lg text-center">
+               <CardContent className="p-6">
+                <p className="text-muted-foreground">
+                  Couldn't find specific recommendations for newcomers based on that. Try a broader description!
+                </p>
+               </CardContent>
+             </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
+
+    
