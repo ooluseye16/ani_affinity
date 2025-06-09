@@ -4,6 +4,8 @@
 import { useState, useEffect, FormEvent } from 'react';
 import type { SuggestAnimeOutput } from '@/ai/flows/suggest-anime';
 import { suggestAnime } from '@/ai/flows/suggest-anime';
+import type { NewcomerAnimeOutput } from '@/ai/flows/newcomer-anime-flow';
+import { suggestNewcomerAnime } from '@/ai/flows/newcomer-anime-flow';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SuggestionCard } from '@/components/SuggestionCard';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks, Loader2 } from 'lucide-react';
+import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks, Loader2, Smile } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 
@@ -22,6 +24,12 @@ export default function AniAffinityClientPage() {
   const [suggestions, setSuggestions] = useState<SuggestAnimeOutput['suggestions'] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const [tasteInput, setTasteInput] = useState('');
+  const [newcomerSuggestions, setNewcomerSuggestions] = useState<NewcomerAnimeOutput['suggestions'] | null>(null);
+  const [isNewcomerLoading, setIsNewcomerLoading] = useState(false);
+  const [newcomerError, setNewcomerError] = useState<string | null>(null);
+
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
 
@@ -97,6 +105,51 @@ export default function AniAffinityClientPage() {
       setIsLoading(false);
     }
   };
+
+  const handleGetNewcomerSuggestions = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!tasteInput.trim()) {
+      setNewcomerError('Please describe your taste in shows/movies.');
+      toast({
+        title: "No Taste Description",
+        description: "Tell us what you like to get newcomer recommendations.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsNewcomerLoading(true);
+    setNewcomerError(null);
+    setNewcomerSuggestions(null);
+
+    try {
+      const result = await suggestNewcomerAnime({ tasteDescription: tasteInput });
+      setNewcomerSuggestions(result.suggestions);
+       if (result.suggestions.length === 0) {
+        toast({
+          title: "No Newcomer Suggestions Found",
+          description: "We couldn't find any suggestions based on your taste. Try a different description!",
+        });
+      } else {
+        toast({
+          title: "Newcomer Suggestions Ready!",
+          description: "Check out these anime to start your journey.",
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+      setNewcomerError(`Failed to get newcomer suggestions: ${errorMessage}`);
+      toast({
+        title: "Error Getting Newcomer Suggestions",
+        description: `An error occurred: ${errorMessage}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsNewcomerLoading(false);
+    }
+  };
+
 
   return (
     <div className="space-y-8">
@@ -192,6 +245,72 @@ export default function AniAffinityClientPage() {
            </CardContent>
          </Card>
       )}
+
+      <Separator />
+
+      <Card className="shadow-xl">
+        <CardHeader>
+          <CardTitle className="font-headline text-2xl flex items-center gap-2">
+            <Smile className="h-7 w-7 text-primary" />
+            New to Anime? Start Your Journey!
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleGetNewcomerSuggestions} className="space-y-4">
+            <Input
+              type="text"
+              placeholder="e.g., I love fantasy adventures like Lord of the Rings, or witty comedies."
+              value={tasteInput}
+              onChange={(e) => setTasteInput(e.target.value)}
+              aria-label="Describe your taste in shows/movies"
+            />
+            <Button type="submit" disabled={isNewcomerLoading} className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
+              {isNewcomerLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Finding Your First Anime...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Find My First Anime
+                </>
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {newcomerError && (
+        <div role="alert" className="p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center gap-2">
+          <AlertCircle className="h-5 w-5" />
+          <p>{newcomerError}</p>
+        </div>
+      )}
+
+      {isNewcomerLoading && <LoadingSpinner size={48} className="h-12 w-12 text-primary" />}
+
+      {newcomerSuggestions && newcomerSuggestions.length > 0 && (
+        <div className="space-y-6">
+          <h2 className="font-headline text-2xl text-center text-primary">Anime For Your First Watch!</h2>
+          <Separator />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {newcomerSuggestions.map((suggestion, index) => (
+              <SuggestionCard key={"newcomer-" + suggestion.title + index} suggestion={suggestion} index={index} />
+            ))}
+          </div>
+        </div>
+      )}
+       {newcomerSuggestions && newcomerSuggestions.length === 0 && !isNewcomerLoading &&(
+         <Card className="shadow-lg text-center">
+           <CardContent className="p-6">
+            <p className="text-muted-foreground">
+              Couldn't find specific recommendations for newcomers based on that. Try a broader description!
+            </p>
+           </CardContent>
+         </Card>
+      )}
+
     </div>
   );
 }
