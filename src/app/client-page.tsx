@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, FormEvent } from 'react';
@@ -22,6 +23,11 @@ export default function AniAffinityClientPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleAddAnime = () => {
     if (currentAnimeInput.trim() && !likedAnimeList.includes(currentAnimeInput.trim())) {
@@ -117,7 +123,7 @@ export default function AniAffinityClientPage() {
               </Button>
             </div>
 
-            {likedAnimeList.length > 0 && (
+            {isClient && likedAnimeList.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-sm font-medium text-muted-foreground">Your Liked Anime:</h3>
                 <div className="flex flex-wrap gap-2">
@@ -140,7 +146,7 @@ export default function AniAffinityClientPage() {
               </div>
             )}
             
-            <Button type="submit" disabled={isLoading || likedAnimeList.length === 0} className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
+            <Button type="submit" disabled={isLoading || (isClient && likedAnimeList.length === 0)} className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
