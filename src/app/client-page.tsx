@@ -6,14 +6,16 @@ import type { SuggestAnimeOutput } from '@/ai/flows/suggest-anime';
 import { suggestAnime } from '@/ai/flows/suggest-anime';
 import type { NewcomerAnimeOutput } from '@/ai/flows/newcomer-anime-flow';
 import { suggestNewcomerAnime } from '@/ai/flows/newcomer-anime-flow';
+import type { AnimeOfTheDayOutput } from '@/ai/flows/anime-of-the-day-flow';
+import { getAnimeOfTheDay } from '@/ai/flows/anime-of-the-day-flow';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { SuggestionCard } from '@/components/SuggestionCard';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks, Smile, Rocket, Loader2 } from 'lucide-react';
+import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks, Smile, Rocket, Loader2, Award } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,12 +32,41 @@ export default function AniAffinityClientPage() {
   const [isNewcomerLoading, setIsNewcomerLoading] = useState(false);
   const [newcomerError, setNewcomerError] = useState<string | null>(null);
 
+  const [animeOfTheDay, setAnimeOfTheDay] = useState<AnimeOfTheDayOutput | null>(null);
+  const [isAnimeOfTheDayLoading, setIsAnimeOfTheDayLoading] = useState(false);
+  const [animeOfTheDayError, setAnimeOfTheDayError] = useState<string | null>(null);
+
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    if (isClient) {
+      const fetchAnimeOfTheDay = async () => {
+        setIsAnimeOfTheDayLoading(true);
+        setAnimeOfTheDayError(null);
+        try {
+          const result = await getAnimeOfTheDay();
+          setAnimeOfTheDay(result);
+        } catch (e) {
+          console.error(e);
+          const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+          setAnimeOfTheDayError(`Failed to get Anime of the Day: ${errorMessage}`);
+          toast({
+            title: "Error Fetching Anime of the Day",
+            description: `An error occurred: ${errorMessage}`,
+            variant: "destructive",
+          });
+        } finally {
+          setIsAnimeOfTheDayLoading(false);
+        }
+      };
+      fetchAnimeOfTheDay();
+    }
+  }, [isClient, toast]);
 
   const handleAddAnime = () => {
     if (currentAnimeInput.trim() && !likedAnimeList.includes(currentAnimeInput.trim())) {
@@ -64,7 +95,7 @@ export default function AniAffinityClientPage() {
 
   const handleGetSuggestions = async (event: FormEvent) => {
     event.preventDefault();
-    if (likedAnimeList.length === 0 && isClient) { // Check isClient here
+    if (isClient && likedAnimeList.length === 0) {
       setError('Please add at least one anime you like.');
       toast({
         title: "No Anime Liked",
@@ -153,6 +184,35 @@ export default function AniAffinityClientPage() {
 
   return (
     <div className="space-y-8">
+      {isClient && (
+        <Card className="shadow-xl border-primary border-2 mb-10">
+          <CardHeader className="text-center">
+            <CardTitle className="font-headline text-3xl flex items-center justify-center gap-3 text-primary">
+              <Award className="h-8 w-8" />
+              Anime of the Day
+              <Award className="h-8 w-8" />
+            </CardTitle>
+            <CardDescription className="text-md text-muted-foreground pt-1">
+              Today's special pick, curated just for you by our AI!
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center items-center p-6">
+            {isAnimeOfTheDayLoading && <LoadingSpinner size={60} className="h-16 w-16 text-primary" />}
+            {animeOfTheDayError && (
+              <div role="alert" className="p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center gap-2">
+                <AlertCircle className="h-5 w-5" />
+                <p>{animeOfTheDayError}</p>
+              </div>
+            )}
+            {animeOfTheDay && !isAnimeOfTheDayLoading && !animeOfTheDayError && (
+              <div className="w-full max-w-md"> {/* Constrain width for single card */}
+                <SuggestionCard suggestion={animeOfTheDay} index={0} />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+      
       <div className="text-center mb-8">
         <h1 className="text-4xl font-headline font-bold text-primary mb-2">Discover Your Next Favorite Anime</h1>
         <p className="text-lg text-muted-foreground">
