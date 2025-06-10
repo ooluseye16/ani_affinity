@@ -8,17 +8,21 @@ import type { NewcomerAnimeOutput } from '@/ai/flows/newcomer-anime-flow';
 import { suggestNewcomerAnime } from '@/ai/flows/newcomer-anime-flow';
 import type { AnimeOfTheDayOutput } from '@/ai/flows/anime-of-the-day-flow';
 import { getAnimeOfTheDay } from '@/ai/flows/anime-of-the-day-flow';
+import type { ResearchAnimeOutput } from '@/ai/flows/research-anime-flow';
+import { researchAnime } from '@/ai/flows/research-anime-flow';
+
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { SuggestionCard } from '@/components/SuggestionCard';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks, Smile, Rocket, Loader2, Award } from 'lucide-react';
+import { PlusCircle, XCircle, Sparkles, AlertCircle, ListChecks, Smile, Rocket, Loader2, Award, Search, BookOpen, Tv2, CalendarDays, Users, Film, ClockIcon, ShieldAlert, Info, GitFork, Image as ImageIcon } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Image from 'next/image';
 
 export default function AniAffinityClientPage() {
   const [currentAnimeInput, setCurrentAnimeInput] = useState('');
@@ -35,6 +39,11 @@ export default function AniAffinityClientPage() {
   const [animeOfTheDay, setAnimeOfTheDay] = useState<AnimeOfTheDayOutput | null>(null);
   const [isAnimeOfTheDayLoading, setIsAnimeOfTheDayLoading] = useState(false);
   const [animeOfTheDayError, setAnimeOfTheDayError] = useState<string | null>(null);
+
+  const [researchQuery, setResearchQuery] = useState('');
+  const [researchResult, setResearchResult] = useState<ResearchAnimeOutput | null>(null);
+  const [isResearchLoading, setIsResearchLoading] = useState(false);
+  const [researchError, setResearchError] = useState<string | null>(null);
 
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
@@ -181,6 +190,43 @@ export default function AniAffinityClientPage() {
     }
   };
 
+  const handleResearchAnime = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!researchQuery.trim()) {
+      setResearchError('Please enter an anime title to research.');
+      toast({
+        title: "No Anime Title",
+        description: "Enter an anime title to get information.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsResearchLoading(true);
+    setResearchError(null);
+    setResearchResult(null);
+
+    try {
+      const result = await researchAnime({ animeTitle: researchQuery });
+      setResearchResult(result);
+      toast({
+        title: "Research Complete!",
+        description: `Information for ${result.title} is ready.`,
+      });
+    } catch (e) {
+      console.error(e);
+      const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
+      setResearchError(`Failed to research anime: ${errorMessage}`);
+      toast({
+        title: "Error Researching Anime",
+        description: `An error occurred: ${errorMessage}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsResearchLoading(false);
+    }
+  };
+
 
   return (
     <div className="space-y-8">
@@ -205,7 +251,7 @@ export default function AniAffinityClientPage() {
               </div>
             )}
             {animeOfTheDay && !isAnimeOfTheDayLoading && !animeOfTheDayError && (
-              <div className="w-full max-w-md"> {/* Constrain width for single card */}
+              <div className="w-full max-w-md">
                 <SuggestionCard suggestion={animeOfTheDay} index={0} />
               </div>
             )}
@@ -221,12 +267,15 @@ export default function AniAffinityClientPage() {
       </div>
 
       <Tabs defaultValue="recommendations" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="recommendations" className="py-3 text-base">
             <ListChecks className="mr-2 h-5 w-5" /> Your Personalized Picks
           </TabsTrigger>
           <TabsTrigger value="newcomer" className="py-3 text-base">
             <Rocket className="mr-2 h-5 w-5" /> New to Anime? Start Here!
+          </TabsTrigger>
+          <TabsTrigger value="research" className="py-3 text-base">
+            <Search className="mr-2 h-5 w-5" /> Research Anime
           </TabsTrigger>
         </TabsList>
 
@@ -389,7 +438,143 @@ export default function AniAffinityClientPage() {
              </Card>
           )}
         </TabsContent>
+
+        <TabsContent value="research">
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle className="font-headline text-2xl flex items-center gap-2">
+                <BookOpen className="h-7 w-7 text-primary" />
+                Look Up Anime Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleResearchAnime} className="space-y-4">
+                <Input
+                  type="text"
+                  placeholder="Enter an anime title to get info (e.g., Cowboy Bebop)"
+                  value={researchQuery}
+                  onChange={(e) => setResearchQuery(e.target.value)}
+                  aria-label="Anime title for research"
+                />
+                <Button type="submit" disabled={isResearchLoading} className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
+                  {isResearchLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Researching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="mr-2 h-4 w-4" />
+                      Research Anime
+                    </>
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {researchError && (
+            <div role="alert" className="mt-4 p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              <p>{researchError}</p>
+            </div>
+          )}
+
+          {isResearchLoading && <LoadingSpinner size={48} className="mt-6 h-12 w-12 text-primary" />}
+          
+          {researchResult && !isResearchLoading && (
+            <Card className="mt-8 shadow-xl animate-fade-in">
+              <CardHeader>
+                <CardTitle className="font-headline text-2xl text-primary">{researchResult.title}</CardTitle>
+                 {researchResult.imageUrl && (
+                    <div className="mt-4 relative aspect-video w-full max-w-md mx-auto rounded-lg overflow-hidden shadow-md">
+                        <Image 
+                            src={researchResult.imageUrl.startsWith('http') ? researchResult.imageUrl : `https://placehold.co/600x400.png`} 
+                            alt={`Image for ${researchResult.title}`} 
+                            layout="fill" 
+                            objectFit="cover"
+                            data-ai-hint="anime promotional art"
+                        />
+                    </div>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-6 text-sm">
+                <div>
+                  <h3 className="font-semibold text-lg text-muted-foreground mb-2 flex items-center gap-2"><Info className="h-5 w-5 text-primary" />Description</h3>
+                  <p className="text-foreground leading-relaxed">{researchResult.description}</p>
+                </div>
+
+                <Separator />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold text-md text-muted-foreground mb-2 flex items-center gap-2"><Tv2 className="h-5 w-5 text-primary" />Details</h4>
+                    <ul className="space-y-2">
+                      {researchResult.studio && <li><strong>Studio:</strong> {researchResult.studio}</li>}
+                      {researchResult.yearReleased && <li><strong>Released:</strong> {researchResult.yearReleased}</li>}
+                      {researchResult.status && <li><strong>Status:</strong> {researchResult.status}</li>}
+                      {researchResult.numberOfEpisodes && <li><strong>Episodes:</strong> {researchResult.numberOfEpisodes}</li>}
+                      {researchResult.averageEpisodeLength && <li><strong>Ep. Length:</strong> {researchResult.averageEpisodeLength}</li>}
+                      {researchResult.ageRating && <li><strong>Age Rating:</strong> {researchResult.ageRating}</li>}
+                      {researchResult.sourceMaterial && <li><strong>Source:</strong> {researchResult.sourceMaterial}</li>}
+                    </ul>
+                  </div>
+                  <div>
+                    {researchResult.genres && researchResult.genres.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="font-semibold text-md text-muted-foreground mb-2 flex items-center gap-2"><Film className="h-5 w-5 text-primary" />Genres</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {researchResult.genres.map(genre => <Badge key={genre} variant="secondary">{genre}</Badge>)}
+                        </div>
+                      </div>
+                    )}
+                    {researchResult.themes && researchResult.themes.length > 0 && (
+                       <div>
+                        <h4 className="font-semibold text-md text-muted-foreground mb-2 flex items-center gap-2"><ImageIcon className="h-5 w-5 text-primary" />Themes</h4> {/* Using ImageIcon as a placeholder for themes */}
+                        <div className="flex flex-wrap gap-2">
+                          {researchResult.themes.map(theme => <Badge key={theme} variant="outline">{theme}</Badge>)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {researchResult.criticalReception && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h3 className="font-semibold text-lg text-muted-foreground mb-2 flex items-center gap-2"><Users className="h-5 w-5 text-primary" />Reception</h3>
+                      <p className="text-foreground leading-relaxed">{researchResult.criticalReception}</p>
+                    </div>
+                  </>
+                )}
+
+                {researchResult.whyWatch && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h3 className="font-semibold text-lg text-muted-foreground mb-2 flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" />Why Watch?</h3>
+                      <p className="text-foreground leading-relaxed">{researchResult.whyWatch}</p>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
+          {isClient && researchResult === null && !isResearchLoading && !researchError && researchQuery !== '' && (
+             <Card className="mt-6 shadow-lg text-center">
+               <CardContent className="p-6">
+                <p className="text-muted-foreground">
+                  No information found for "{researchQuery}". Try a different title or check for typos.
+                </p>
+               </CardContent>
+             </Card>
+          )}
+
+
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
+
