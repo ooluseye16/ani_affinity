@@ -1,0 +1,45 @@
+
+// {
+//   "compilerOptions": {
+//     "module": "NodeNext",
+//     "esModuleInterop": true,
+//     "moduleResolution": "nodenext",
+//     "noImplicitReturns": true,
+//     "noUnusedLocals": true,
+//     "outDir": "lib",
+//     "sourceMap": true,
+//     "strict": true,
+//     "target": "es2017"
+//   },
+//   "compileOnSave": true,
+//   "include": [
+//     "src"
+//   ]
+// }
+// functions/tsconfig.json (or relevant tsconfig)
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "module": "commonjs",
+    "lib": ["es2021"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "lib", // Or wherever your compiled JS goes
+    "sourceMap": true,
+    "resolveJsonModule": true,
+
+    // Add/Verify these for path aliases
+    "baseUrl": ".", // Base directory for resolving modules (functions directory)
+    "paths": {
+      // When AI flows (in ../src/ai/flows) import @/ai/genkit,
+      // it resolves to functions/../src/ai/genkit which is project_root/src/ai/genkit
+      "@/ai/genkit": ["../src/ai/genkit"],
+      // For other @/* imports within AI flows or function sources
+      "@/*": ["../src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "../src/ai/**/*.ts"], // Compile functions' own src and shared AI flows
+  "exclude": ["node_modules"]
+}

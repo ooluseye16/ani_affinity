@@ -48,20 +48,24 @@ export async function suggestAnime(input: SuggestAnimeInput): Promise<SuggestAni
   return suggestAnimeFlow(input);
 }
 
-const estimateConfidence = ai.defineTool({
+const estimateConfidenceInputSchema = z.object({
+    animeDescription: z.string().describe('Description of the anime to estimate the user liking.'),
+    userPreferences: z.array(z.string()).describe('List of user liked anime.'),
+});
+
+const estimateConfidence = ai.defineTool(
+  {
     name: 'estimateConfidence',
     description: 'Estimates the likelihood that a user will enjoy an anime based on their preferences.',
-    inputSchema: z.object({
-        animeDescription: z.string().describe('Description of the anime to estimate the user liking.'),
-        userPreferences: z.array(z.string()).describe('List of user liked anime.'),
-    }),
+    inputSchema: estimateConfidenceInputSchema,
     outputSchema: z.number().describe('The confidence score (as a percentage) that the user will like the suggested anime.'),
-    async implementation(input) {
-        // TODO: add implementation here to return the confidence percentage.
-        // Replace this with a proper calculation based on the anime description and user preferences.
-        return Math.floor(Math.random() * 51) + 50; // Random confidence between 50-100
-    }
-});
+  },
+  async (input: z.infer<typeof estimateConfidenceInputSchema>) => {
+    // TODO: add implementation here to return the confidence percentage.
+    // Replace this with a proper calculation based on the anime description and user preferences.
+    return Math.floor(Math.random() * 51) + 50; // Random confidence between 50-100
+  }
+);
 
 const suggestAnimePrompt = ai.definePrompt({
   name: 'suggestAnimePrompt',
