@@ -33,6 +33,7 @@ const AnimeOfTheDayOutputSchema = z.object({
   seasons: z.string().optional().describe('Number of seasons (e.g., "3 seasons", "Movie", "Ongoing").'),
   episodeLength: z.string().optional().describe('Typical episode length (e.g., "24 min per episode", "1h 30min total" for a movie).'),
   tags: z.array(z.string()).optional().describe('A list of 3-5 descriptive tags for the anime (e.g., genre, themes).'),
+  lastUpdated: z.date().optional().describe('The last time this Anime of the Day was updated.'),
 });
 export type AnimeOfTheDayOutput = z.infer<typeof AnimeOfTheDayOutputSchema>;
 

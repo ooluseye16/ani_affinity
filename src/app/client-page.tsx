@@ -25,31 +25,39 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from 'next/image';
 
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig"; // Import your initialized db
+
+
 // Placeholder function for fetching Anime of the Day from your database
 // TODO: Implement this function to fetch from your actual database (e.g., Firestore)
 async function fetchAnimeOfTheDayFromDB(): Promise<AnimeOfTheDayOutput | null> {
   console.log("Attempting to fetch Anime of the Day from DB (placeholder)...");
-  // In a real implementation:
-  // 1. Connect to your database.
-  // 2. Query the record that stores the current Anime of the Day.
-  //    This record should be updated daily by a separate backend process/scheduled function
-  //    which calls the getAnimeOfTheDay() Genkit flow.
-  // 3. Return the data or null if not found/error.
 
-  // For now, returning null to simulate. Replace with actual DB call.
-  // You could return a mock object here for testing UI:
-  // return {
-  //   title: "Mock Anime of the Day (DB)",
-  //   description: "This is a mock description from the database placeholder.",
-  //   rating: 8.5,
-  //   confidence: 95,
-  //   reason: "This is a mock reason because it's a placeholder.",
-  //   seasons: "1 season",
-  //   episodeLength: "24 min",
-  //   tags: ["Mock", "Placeholder"]
-  // };
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-  return null; 
+  try {
+    // Reference to the specific document where Anime of the Day is stored
+    const animeDocRef = doc(db, "app_data", "anime_of_the_day");
+    const docSnap = await getDoc(animeDocRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data() as AnimeOfTheDayOutput;
+      console.log("Anime of the Day fetched:", data.title);
+
+      // Firestore Timestamps are objects, you might want to convert them to JS Date objects
+      // if not automatically handled by your SDK version or if you prefer
+      if (data.lastUpdated && typeof data.lastUpdated === 'function') {
+        data.lastUpdated = data.lastUpdated;
+      }
+
+      return data;
+    } else {
+      console.log("No 'Anime of the Day' document found!");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching Anime of the Day from DB:", error);
+    return null;
+  }
 }
 
 
