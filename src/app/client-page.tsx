@@ -7,7 +7,8 @@ import { suggestAnime } from '@/ai/flows/suggest-anime';
 import type { NewcomerAnimeOutput } from '@/ai/flows/newcomer-anime-flow';
 import { suggestNewcomerAnime } from '@/ai/flows/newcomer-anime-flow';
 import type { AnimeOfTheDayOutput } from '@/ai/flows/anime-of-the-day-flow';
-import { getAnimeOfTheDay } from '@/ai/flows/anime-of-the-day-flow';
+// We keep the import for the type, but getAnimeOfTheDay will be called by a backend process
+// import { getAnimeOfTheDay } from '@/ai/flows/anime-of-the-day-flow'; 
 import type { ResearchAnimeOutput } from '@/ai/flows/research-anime-flow';
 import { researchAnime } from '@/ai/flows/research-anime-flow';
 
@@ -23,6 +24,34 @@ import { useToast } from "@/hooks/use-toast";
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Image from 'next/image';
+
+// Placeholder function for fetching Anime of the Day from your database
+// TODO: Implement this function to fetch from your actual database (e.g., Firestore)
+async function fetchAnimeOfTheDayFromDB(): Promise<AnimeOfTheDayOutput | null> {
+  console.log("Attempting to fetch Anime of the Day from DB (placeholder)...");
+  // In a real implementation:
+  // 1. Connect to your database.
+  // 2. Query the record that stores the current Anime of the Day.
+  //    This record should be updated daily by a separate backend process/scheduled function
+  //    which calls the getAnimeOfTheDay() Genkit flow.
+  // 3. Return the data or null if not found/error.
+
+  // For now, returning null to simulate. Replace with actual DB call.
+  // You could return a mock object here for testing UI:
+  // return {
+  //   title: "Mock Anime of the Day (DB)",
+  //   description: "This is a mock description from the database placeholder.",
+  //   rating: 8.5,
+  //   confidence: 95,
+  //   reason: "This is a mock reason because it's a placeholder.",
+  //   seasons: "1 season",
+  //   episodeLength: "24 min",
+  //   tags: ["Mock", "Placeholder"]
+  // };
+  await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+  return null; 
+}
+
 
 export default function AniAffinityClientPage() {
   const [currentAnimeInput, setCurrentAnimeInput] = useState('');
@@ -54,12 +83,22 @@ export default function AniAffinityClientPage() {
 
   useEffect(() => {
     if (isClient) {
-      const fetchAnimeOfTheDay = async () => {
+      const loadAnimeOfTheDay = async () => {
         setIsAnimeOfTheDayLoading(true);
         setAnimeOfTheDayError(null);
+        setAnimeOfTheDay(null); // Clear previous
         try {
-          const result = await getAnimeOfTheDay();
-          setAnimeOfTheDay(result);
+          const result = await fetchAnimeOfTheDayFromDB(); // Changed to DB fetch
+          if (result) {
+            setAnimeOfTheDay(result);
+          } else {
+            setAnimeOfTheDayError("Anime of the Day is not available at the moment. Please check back later.");
+            toast({
+              title: "Anime of the Day Unavailable",
+              description: "Could not fetch the Anime of the Day. It might be updating or not set.",
+              variant: "default", 
+            });
+          }
         } catch (e) {
           console.error(e);
           const errorMessage = e instanceof Error ? e.message : 'An unknown error occurred.';
@@ -73,7 +112,7 @@ export default function AniAffinityClientPage() {
           setIsAnimeOfTheDayLoading(false);
         }
       };
-      fetchAnimeOfTheDay();
+      loadAnimeOfTheDay();
     }
   }, [isClient, toast]);
 
@@ -230,7 +269,7 @@ export default function AniAffinityClientPage() {
 
   return (
     <div className="space-y-8">
-      {isClient && (
+      {isClient && ( // Keep isClient check for this section
         <Card className="shadow-xl border-primary border-2 mb-10">
           <CardHeader className="text-center">
             <CardTitle className="font-headline text-3xl flex items-center justify-center gap-3 text-primary">
@@ -239,12 +278,12 @@ export default function AniAffinityClientPage() {
               <Award className="h-8 w-8" />
             </CardTitle>
             <CardDescription className="text-md text-muted-foreground pt-1">
-              Today's special pick, curated just for you by our AI!
+              Today's special pick! (Note: Needs database integration for consistency)
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex justify-center items-center p-6">
+          <CardContent className="flex justify-center items-center p-6 min-h-[150px]"> {/* Added min-h for consistent height */}
             {isAnimeOfTheDayLoading && <LoadingSpinner size={60} className="h-16 w-16 text-primary" />}
-            {animeOfTheDayError && (
+            {animeOfTheDayError && !isAnimeOfTheDayLoading && (
               <div role="alert" className="p-4 bg-destructive/10 border border-destructive text-destructive rounded-md flex items-center gap-2">
                 <AlertCircle className="h-5 w-5" />
                 <p>{animeOfTheDayError}</p>
@@ -254,6 +293,12 @@ export default function AniAffinityClientPage() {
               <div className="w-full max-w-md">
                 <SuggestionCard suggestion={animeOfTheDay} index={0} />
               </div>
+            )}
+            {!animeOfTheDay && !isAnimeOfTheDayLoading && !animeOfTheDayError && (
+                 <div role="alert" className="p-4 bg-muted/50 border border-border text-muted-foreground rounded-md flex flex-col items-center gap-2 text-center">
+                    <Smile className="h-8 w-8" />
+                    <p>The Anime of the Day is currently unavailable. <br/>This feature requires database setup.</p>
+                 </div>
             )}
           </CardContent>
         </Card>
