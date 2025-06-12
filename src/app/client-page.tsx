@@ -286,7 +286,7 @@ export default function AniAffinityClientPage() {
               <Award className="h-8 w-8" />
             </CardTitle>
             <CardDescription className="text-md text-muted-foreground pt-1">
-              Today's special pick! (Note: Needs database integration for consistency)
+              Today's special pick!
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center items-center p-6 min-h-[150px]"> {/* Added min-h for consistent height */}
