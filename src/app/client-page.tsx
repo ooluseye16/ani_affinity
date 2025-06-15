@@ -320,17 +320,32 @@ export default function AniAffinityClientPage() {
       </div>
 
       <Tabs defaultValue="recommendations" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6">
-          <TabsTrigger value="recommendations" className="py-3 text-base">
-            <ListChecks className="mr-2 h-5 w-5" /> Your Personalized Picks
-          </TabsTrigger>
-          <TabsTrigger value="newcomer" className="py-3 text-base">
-            <Rocket className="mr-2 h-5 w-5" /> New to Anime? Start Here!
-          </TabsTrigger>
-          <TabsTrigger value="research" className="py-3 text-base">
-            <Search className="mr-2 h-5 w-5" /> Research Anime
-          </TabsTrigger>
-        </TabsList>
+      <TabsList className="flex w-full gap-1 bg-muted rounded-lg p-1 overflow-hidden">
+  <TabsTrigger
+    value="recommendations"
+    className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium rounded-md transition-all whitespace-nowrap overflow-hidden text-ellipsis data-[state=active]:bg-background data-[state=active]:text-foreground"
+  >
+    {/* <ListChecks className="h-4 w-4 shrink-0" /> */}
+    <span className="truncate">Recommendations</span>
+  </TabsTrigger>
+
+  <TabsTrigger
+    value="newcomer"
+    className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium rounded-md transition-all whitespace-nowrap overflow-hidden text-ellipsis data-[state=active]:bg-background data-[state=active]:text-foreground"
+  >
+    {/* <Rocket className="h-4 w-4 shrink-0" /> */}
+    <span className="truncate">New to Anime?</span>
+  </TabsTrigger>
+
+  <TabsTrigger
+    value="research"
+    className="flex flex-1 items-center justify-center gap-2 py-3 text-sm font-medium rounded-md transition-all whitespace-nowrap overflow-hidden text-ellipsis data-[state=active]:bg-background data-[state=active]:text-foreground"
+  >
+    {/* <Search className="h-4 w-4 shrink-0" /> */}
+    <span className="truncate">Research Anime</span>
+  </TabsTrigger>
+</TabsList>
+
 
         <TabsContent value="recommendations">
           <Card className="shadow-xl">
